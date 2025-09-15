@@ -1,5 +1,6 @@
 import "../css/Footer.css";
-import { FaInstagram, FaTwitter, FaLinkedin } from 'react-icons/fa';
+import { FaInstagram } from 'react-icons/fa';
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -11,17 +12,17 @@ export default function Footer() {
         <div className="footer-links">
           <h3>Quick Links</h3>
           <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/store">Shop</a></li>
+            <li><Link href="/">Home</Link></li>
+            <li><Link href="/store">Shop</Link></li>
           </ul>
         </div>
         <div className="footer-social">
           <h3>Follow Us</h3>
           <div className="social-icons">
-            <a href="https://www.instagram.com/johnnyflayy/" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
-            <a href="https://www.instagram.com/msf.creates/" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
-            <a href="https://www.instagram.com/biniyam_shibre/" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
-            <a href="https://www.instagram.com/ben.hurrrr/" target="_blank" rel="noopener noreferrer"><FaInstagram /></a>
+            <Link href="https://www.instagram.com/johnnyflayy/" target="_blank" rel="noopener noreferrer"><FaInstagram /></Link>
+            <Link href="https://www.instagram.com/msf.creates/" target="_blank" rel="noopener noreferrer"><FaInstagram /></Link>
+            <Link href="https://www.instagram.com/biniyam_shibre/" target="_blank" rel="noopener noreferrer"><FaInstagram /></Link>
+            <Link href="https://www.instagram.com/ben.hurrrr/" target="_blank" rel="noopener noreferrer"><FaInstagram /></Link>
           </div>
         </div>
       </div>

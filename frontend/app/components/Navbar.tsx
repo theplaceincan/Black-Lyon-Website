@@ -7,9 +7,9 @@ export default function Navbar() {
     <div className="navbar-container">
       <div className="navbar-cover">
         <div className="navbar-logo-container">
-          <a href={'/'}>
-            <img src="/blacklyonmain.png" className="navbar-logo"/>
-          </a>
+          <Link href={'/'}>
+            <Image alt="blacklyonlogo" src="/blacklyonmain.png" className="navbar-logo"/>
+          </Link>
         </div>
         <div className="navbar-btns-container">
           <Link href={"/store"} className="navbar-btn">SHOP</Link>

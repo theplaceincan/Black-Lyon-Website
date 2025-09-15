@@ -1,4 +1,5 @@
 import css from "./Store.module.css";
+import Image from "next/image";
 
 export default function Store() {
   return (
@@ -9,7 +10,7 @@ export default function Store() {
       <div className={css["products-container"]}>
         <div className={css["product-card"]}>
           <div className={css["product-img"]}>
-            <img src={'/lyon.png'} alt="Biniyam T-Shirt"></img>
+            <Image src={'/lyon.png'} alt="Biniyam T-Shirt"></Image>
           </div>
           <div className={css["product-text-cover"]}>
             <p className={css["product-title"]}>New Biniyam T-Shirt</p>
