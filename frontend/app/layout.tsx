@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Bebas_Neue } from "next/font/google";
 import "./css/Globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -14,10 +14,17 @@ import Footer from "./components/Footer";
 //   subsets: ["latin"],
 // });
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
+// const montserrat = Montserrat({
+//   variable: "--font-montserrat",
+//   subsets: ["latin"],
+//   weight: ['700', '900'],
+// });
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas-neue",
   subsets: ["latin"],
-  weight: ['700', '900'],
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -33,11 +40,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${montserrat.className} antialiased`}
+        className={`${bebasNeue.className} antialiased`}
       >
-        <Navbar/>
+        <Navbar />
         {children}
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );

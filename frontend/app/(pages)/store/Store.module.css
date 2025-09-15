@@ -76,7 +76,7 @@
 }
 
 .product-title {
-  font-size: 1rem;
+  font-size: 1.2rem;
   /* font-weight: 900; */
   color: white;
   margin: 0;
@@ -84,7 +84,7 @@
 }
 
 .product-price {
-  font-size: 1rem;
+  font-size: 1.2rem;
   /* font-weight: 700; */
   color: white;
   margin: 0;
@@ -98,7 +98,7 @@
   flex-grow: 1;
   cursor: pointer;
   padding: 1rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
   border: none;
