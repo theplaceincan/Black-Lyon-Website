@@ -1,0 +1,115 @@
+/* :root {
+  --font-montserrat: 'Montserrat', sans-serif;
+} */
+
+.container {
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 2rem;
+  background-color: #fff;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 4rem;
+}
+
+.products-container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.search {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #000;
+  background-color: #fff;
+  border: 2px solid #000;
+  outline: none;
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+
+.search::placeholder {
+  color: #555;
+  text-transform: uppercase;
+}
+
+/* Product card */
+
+.product-card {
+  font-family: var(--font-montserrat), sans-serif;
+  background-color: #ffffff;
+  border: 2px solid #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.product-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #f0f0f0;
+}
+
+.product-text-cover {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-top: 2px solid #000;
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #000;
+  margin: 0;
+  /* text-transform: uppercase; */
+}
+
+.product-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.product-btn-cover {
+  display: flex;
+}
+
+.cart-btn {
+  flex-grow: 1;
+  cursor: pointer;
+  padding: 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  border-top: 2px solid #000;
+  border-radius: 0;
+  background-color: #000;
+  color: #fff;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.cart-btn:hover {
+  background-color: #333;
+}

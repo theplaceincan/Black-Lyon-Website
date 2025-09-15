@@ -1,9 +1,25 @@
-import css from "./Store.module.css"
+import css from "./Store.module.css";
 
 export default function Store() {
   return (
-    <div>
-      <p>store</p>
+    <div className={css["container"]}>
+      <div className={css["search-container"]}>
+        <input placeholder="Search Products" className={css["search"]}></input>
+      </div>
+      <div className={css["products-container"]}>
+        <div className={css["product-card"]}>
+          <div className={css["product-img"]}>
+            <img src={'/lyon.png'} alt="Biniyam T-Shirt"></img>
+          </div>
+          <div className={css["product-text-cover"]}>
+            <p className={css["product-title"]}>New Biniyam T-Shirt</p>
+            <p className={css["product-price"]}>$50.00</p>
+          </div>
+          <div className={css["product-btn-cover"]}>
+            <button className={css["cart-btn"]}>Add to Cart</button>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

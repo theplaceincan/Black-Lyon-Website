@@ -1,14 +1,47 @@
-/* Use your existing variables from globals.css if you have them */
 :root {
   --clr-dark: #1a1a1a;
   --clr-light: #ffffff;
   --clr-grey: #a0a0a0;
+  --ethi-green: #009942;
+  --ethi-yellow: #ffbb00;
+  --ethi-red: #ce1126;
 }
+
+.social-icons {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.social-icons a {
+  color: var(--clr-light);
+  font-size: 1.75rem;
+  transition: transform 0.2s ease-in-out, color 0.3s ease-in-out;
+}
+
+.social-icons a:nth-of-type(1):hover {
+  color: var(--ethi-green);
+  transform: scale(1.1);
+}
+
+.social-icons a:nth-of-type(2):hover {
+  color: var(--ethi-yellow);
+  transform: scale(1.1);
+}
+.social-icons a:nth-of-type(3):hover {
+  color: var(--ethi-yellow);
+  transform: scale(1.1);
+}
+
+.social-icons a:nth-of-type(4):hover {
+  color: var(--ethi-red);
+  transform: scale(1.1);
+}
+
 
 .footer-container {
   background-color: var(--clr-dark);
   color: var(--clr-light);
-  padding: 4rem 2rem 1.5rem; /* More padding on top */
+  padding: 4rem 2rem 1.5rem;
 }
 
 .footer-content {
@@ -16,14 +49,14 @@
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap; /* Allows columns to stack on smaller screens */
-  gap: 2rem; /* Spacing between columns */
+  flex-wrap: wrap;
+  gap: 2rem;
   margin-bottom: 2rem;
 }
 
 .footer-brand, .footer-links, .footer-social {
-  flex: 1; /* Allows columns to grow */
-  min-width: 250px; /* Prevents columns from getting too narrow */
+  flex: 1;
+  min-width: 250px;
 }
 
 .footer-brand h2 {
@@ -62,22 +95,6 @@
 
 .footer-links a:hover {
   color: var(--clr-grey);
-}
-
-.social-icons {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.social-icons a {
-  color: var(--clr-light);
-  font-size: 1.75rem;
-  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-
-.social-icons a:hover {
-  color: var(--clr-grey);
-  transform: scale(1.1);
 }
 
 .footer-bottom {

@@ -52,12 +52,6 @@
   user-select: none;
 }
 
-@media (max-width: 768px) {
-  .hero-header {
-    font-size: clamp(4rem, 10vw, 8rem);
-  }
-}
-
 .hero-btn { 
   position: relative;
   overflow: hidden;
@@ -71,7 +65,7 @@
   max-width: 400px;
   border: none;
   background: linear-gradient(
-    to right,
+    to bottom,
     var(--clr-green) 0%,
     var(--clr-green) 33.33%,
     var(--clr-yellow) 33.33%,
@@ -108,4 +102,23 @@
   font-size: 25px;
   color: white;
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+
+@media (max-width: 768px) {
+  .hero-header {
+    font-size: clamp(2rem, 10vw, 2rem);
+  }
+  .btn-text {
+    font-size: 20px;
+  }
+  .hero-header span {
+    display: block;
+  }
+  .mobile-effect-1 {
+    font-size: 50px;
+  }
+  .mobile-effect-2 {
+    font-size: 55px;
+  }
 }
