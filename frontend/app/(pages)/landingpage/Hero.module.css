@@ -7,7 +7,7 @@
 }
 
 .hero-container {
-  position: relative;
+  position: relative; /* Stays the same */
   min-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -15,21 +15,21 @@
   justify-content: center;
   padding: 1.5rem;
   text-align: center;
-  background-image: url("/lyon.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  background-color: black;
 }
 
 .hero-container::before {
-  content: "";
+  content: ""; 
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: white;
-  opacity: 0.9;
+  background-image: url("/lyon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.1;
   z-index: 0;
 }
 
@@ -38,13 +38,14 @@
   z-index: 1;
 }
 
+
 /* --- Page Content */
 
 .hero-header {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
   text-transform: uppercase;
-  color: var(--clr-dark);
+  color: var(--clr-light);
   margin-bottom: 1.5rem;
   font-size: clamp(2.5rem, 10vw, 8rem);
   line-height: 1.1;
@@ -84,9 +85,22 @@
   width: 100%;
   height: 100%;
   background-color: black;
+  border: 1px solid rgb(71, 71, 71);
   z-index: -1; 
   opacity: 1;
   transition: opacity 0.2s ease-in-out;
+  font-size: 25px;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-btn p {
+  color: white;
+  font-size: 25px;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-btn p:hover {
+  color: black;
 }
 
 .hero-btn:hover::before {
@@ -97,13 +111,6 @@
   transform: translateY(-3px);
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
 }
-
-.btn-text {
-  font-size: 25px;
-  color: white;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-}
-
 
 @media (max-width: 768px) {
   .hero-header {

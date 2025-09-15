@@ -10,7 +10,9 @@ export default function Hero() {
         <span className="red">ENTERTAINMENT</span>
         </h1>
       <Link href={"/store"} className={css["hero-btn"]}>
-        <p className={css["btn-text"]}>SEE THE SHOP</p>
+        <p>
+          SEE THE SHOP
+        </p>
       </Link>
     </div>
   );
