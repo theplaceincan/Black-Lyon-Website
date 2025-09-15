@@ -1,1 +1,34 @@
 @import "tailwindcss";
+
+.red {
+  transition: color 0.01s ease;
+}
+
+.red:hover {
+  color: var(--color-red-700);
+}
+
+.yellow {
+  transition: color 0.01s ease;
+}
+
+.yellow:hover {
+  color: var(--color-yellow-500);
+}
+
+.green {
+  transition: color 0.01s ease;
+}
+
+.green:hover {
+  color: var(--color-green-700);
+}
+
+
+/* @media (max-width: 768px)  {
+
+} */
+
+
+
+/* MAIN BUTTONS */

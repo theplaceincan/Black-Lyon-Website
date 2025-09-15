@@ -1,18 +1,17 @@
-import css from "./Hero.module.css"
+import css from "./Hero.module.css";
+import Link from "next/link";
 
 export default function Hero() {
   return (
-    <div className={css["container"]}>
-      <div className={css["hero-container"]}>
-        <div className={css["text-container"]}>
-          <p className={[css["hero-title"], css["green"]].join(" ")}>REALITY TV</p>
-          <p className={[css["hero-title"], css["yellow"]].join(" ")}>MMA FIGHTER</p>
-          <p className={[css["hero-title"], css["red"]].join(" ")}>DANCER</p>
-        </div>
-        <div className={css["img-container"]}>
-          {/* <img className={css["hero-img"]} src="/biniyam1.avif"></img> */}
-        </div>
-      </div>
+    <div className={css["hero-container"]}>
+      <h1 className={css["hero-header"]}>
+        <span className="green">BLACK</span>
+        <span className="yellow"> LYON </span>
+        <span className="red">STUDIOS</span>
+        </h1>
+      <Link href={"/store"} className={css["hero-btn"]}>
+        <p className={css["btn-text"]}>SEE THE SHOP</p>
+      </Link>
     </div>
-  )
+  );
 }
