@@ -29,7 +29,7 @@
   width: 100%;
   padding: 0.8rem 1rem;
   font-family: var(--font-montserrat), sans-serif;
-  font-weight: 700;
+  /* font-weight: 700; */
   font-size: 1rem;
   color: white;
   background-color: #111111;
@@ -45,6 +45,7 @@
 }
 
 /* Product card */
+/* existing styles... */
 
 .product-card {
   font-family: var(--font-montserrat), sans-serif;
@@ -61,10 +62,19 @@
   box-shadow: 4px 4px 0px #262626;
 }
 
-.product-img img {
-  height: auto;
+/* wrapper keeps your black frame */
+.product-img {
+  background-color: #000;   /* keep your black bar behind image */
+}
+
+/* target the next/image <img> directly */
+.product-img-tag {
   display: block;
-  background-color: #000000;
+  width: 100%;
+  height: auto;
+  background-color: #000;
+  /* If you ever set a fixed height on the wrapper, uncomment:
+     object-fit: contain; */
 }
 
 .product-text-cover {
@@ -77,16 +87,13 @@
 
 .product-title {
   font-size: 1.2rem;
-  /* font-weight: 900; */
-  color: white;
+  color: #fff;
   margin: 0;
-  /* text-transform: uppercase; */
 }
 
 .product-price {
   font-size: 1.2rem;
-  /* font-weight: 700; */
-  color: white;
+  color: #fff;
   margin: 0;
 }
 
@@ -94,12 +101,12 @@
   display: flex;
 }
 
+/* this class is now passed into AddToCartButton */
 .cart-btn {
   flex-grow: 1;
   cursor: pointer;
   padding: 1rem;
   font-size: 1rem;
-  /* font-weight: 700; */
   text-transform: uppercase;
   border: none;
   border-top: 2px solid #000;

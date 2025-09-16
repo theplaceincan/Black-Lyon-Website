@@ -14,7 +14,8 @@ export default function Navbar() {
         </div>
         <div className="navbar-btns-container">
           <Link href={"/store"} className="navbar-btn">SHOP</Link>
-           <Link href={"/cart"} className="navbar-icon-btn" target="_blank" rel="noopener noreferrer"><FaShoppingCart /></Link>
+           <Link href={"/cart"} className="navbar-icon-btn" target="_blank" rel="noopener noreferrer">
+           <FaShoppingCart /><p>(0)</p></Link>
         </div>
       </div>
     </div>

@@ -1,0 +1,141 @@
+:root {
+  --maxw: 600px;
+}
+
+.container {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 40px;
+  color: white;
+}
+
+
+/* Cart System */
+
+.cart-system-cover {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Item Card */
+
+.items-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--maxw);
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+.item-card {
+  background-color: rgb(33, 33, 33);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.item-card-info-cover {
+  display: flex;
+}
+
+.item-card-texts {
+  margin-left: 10px;
+}
+
+.item-card-title {
+  cursor: pointer;
+  color: white;
+  font-size: 20;
+}
+
+.item-card-title:hover {
+  color: rgb(201, 201, 201);
+}
+
+.item-card-price {
+  color: rgb(194, 194, 194);
+}
+
+.remove-item-btn {
+  cursor: pointer;
+  color: rgb(224, 224, 224);
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-item-btn:hover {
+  color: rgb(255, 69, 69);
+}
+
+.item-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cart Actions */
+
+.cart-start-actions-container {
+  width: 100%;
+  max-width: var(--maxw);
+  display: flex;
+  align-items: center;
+  justify-content: start;
+}
+
+.cart-end-actions-container {
+  width: 100%;
+  max-width: var(--maxw);
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+
+.cart-clear-btn {
+  cursor: pointer;
+  background-color: black;
+  color: rgb(255, 69, 69);
+  transition: all 0.1s ease;
+  display: flex;
+  font-size: 13px;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-clear-btn:hover {
+  color: red;
+}
+
+.cart-buy-btn {
+  cursor: pointer;
+  padding: 10px 21px;
+  background-color: rgb(20, 20, 20);
+  border: 1px solid rgb(71, 71, 71);
+  color: white;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-buy-btn:hover {
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+}

@@ -3,7 +3,6 @@
   --clr-grey: #a0a0a0;
 }
 
-
 .navbar-container {
   width: 100%;
   display: flex;
@@ -32,7 +31,6 @@
   background-color: black;
   border: 1px solid rgb(71, 71, 71);
   color: white;
-  /* font-weight: 700; */
   transition: all 0.1s ease;
   display: flex;
   align-items: center;
@@ -49,8 +47,19 @@
   color: var(--clr-light);
   font-size: 20;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-icon-btn p {
+  margin-left: 5px;
 }
 
 .navbar-icon-btn:hover {
   color: var(--clr-grey);
+}
+
+.navbar-icon-cover {
+ display: absolute;
 }
