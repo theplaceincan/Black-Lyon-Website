@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  background-color: black;
+}
+
 .red {
   transition: color 0.01s ease;
 }

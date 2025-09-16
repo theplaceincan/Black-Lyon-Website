@@ -9,10 +9,8 @@ export default function Hero() {
         <span className={[css["mobile-effect-2"], "yellow"].join(' ')}> LYON </span>
         <span className="red">ENTERTAINMENT</span>
         </h1>
-      <Link href={"/store"} className={css["hero-btn"]}>
-        <p>
-          SEE THE SHOP
-        </p>
+      <Link className="w-full max-w-96" href={"/store"}>
+        <button className={css["hero-btn"]}>SEE THE SHOP</button>
       </Link>
     </div>
   );

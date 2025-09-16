@@ -1,6 +1,7 @@
 import "../css/Navbar.css"
 import Image from "next/image"
 import Link from "next/link"
+import { FaInstagram, FaShoppingCart } from 'react-icons/fa';
 
 export default function Navbar() {
   return (
@@ -13,6 +14,7 @@ export default function Navbar() {
         </div>
         <div className="navbar-btns-container">
           <Link href={"/store"} className="navbar-btn">SHOP</Link>
+           <Link href={"/cart"} className="navbar-icon-btn" target="_blank" rel="noopener noreferrer"><FaShoppingCart /></Link>
         </div>
       </div>
     </div>

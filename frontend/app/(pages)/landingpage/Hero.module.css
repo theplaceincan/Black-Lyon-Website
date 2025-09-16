@@ -42,7 +42,7 @@
 
 .hero-header {
   font-family: var(--font-bebas-neue), sans-serif;
-  font-weight: 900;
+  /* font-weight: 900; */
   text-transform: uppercase;
   color: var(--clr-light);
   margin-bottom: 1.5rem;
@@ -60,9 +60,8 @@
   padding: 0.8rem 1.5rem;
   font-family: var(--font-bebas-neue), sans-serif;
   font-size: 1.25rem;
-  font-weight: 700;
+  /* font-weight: 700; */
   width: 100%;
-  max-width: 400px;
   border: none;
   background: linear-gradient(
     to bottom,
@@ -74,6 +73,8 @@
     var(--clr-red) 100%
   );
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  color: white;
+  font-size: 25px;
 }
 
 .hero-btn::before {
@@ -89,17 +90,6 @@
   opacity: 1;
   transition: opacity 0.2s ease-in-out;
   font-size: 25px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-}
-
-.hero-btn p {
-  color: white;
-  font-size: 25px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-}
-
-.hero-btn p:hover {
-  color: black;
 }
 
 .hero-btn:hover::before {
@@ -107,6 +97,7 @@
 }
 
 .hero-btn:hover {
+  color: black;
   transform: translateY(-3px);
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
 }
@@ -126,5 +117,22 @@
   }
   .mobile-effect-2 {
     font-size: 55px;
+  }
+
+  .hero-container {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: black;
+  }
+
+  .hero-container::before {
+    background-position: -120px center;
+    background-size: cover;
   }
 }

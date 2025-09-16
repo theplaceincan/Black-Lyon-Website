@@ -1,50 +1,38 @@
-/* :root {
-  --font-montserrat: 'Montserrat', sans-serif;
-} */
-
 .container {
-  min-height: 90vh;
+  min-height: 40vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 4rem 2rem;
-  background-color: #000000;
-}
-
-.search-container {
-  width: 100%;
-  max-width: 500px;
-  margin-bottom: 4rem;
-}
-
-.products-container {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   justify-content: center;
-  gap: 2.5rem;
-}
-
-.search {
+  flex-direction: column;
   width: 100%;
-  padding: 0.8rem 1rem;
-  font-family: var(--font-montserrat), sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
+  border-top: 5px solid;
+  border-bottom: 5px solid;
+  border-image: linear-gradient(to right, green, yellow, red) 1;
+  padding: 90px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 30px;
+  }
+}
+
+.page-title {
+  text-align: center;
+  font-size: 40px;
   color: white;
-  background-color: #111111;
-  border: 2px solid rgb(71, 71, 71);
-  outline: none;
-  border-radius: 0;
-  transition: all 0.2s ease;
 }
 
-.search::placeholder {
-  color: #555;
-  text-transform: uppercase;
+.featured-products-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 30px;
 }
 
-/* Product card */
+
+/* Product Card */
 
 .product-card {
   font-family: var(--font-montserrat), sans-serif;
@@ -111,4 +99,25 @@
 
 .cart-btn:hover {
   background-color: #161616;
+}
+
+
+
+/* See More Button */
+
+.more-btn {
+  cursor: pointer;
+  padding: 10px;
+  padding-left: 21px;
+  padding-right: 21px;
+  background-color: black;
+  border: 1px solid rgb(71, 71, 71);
+  color: white;
+  transition: color 0.1s ease, background-color 0.1s ease, border 0.1s ease;
+}
+
+.more-btn:hover {
+  background-color: white;
+  border: 1px solid black;
+  color: black;
 }
