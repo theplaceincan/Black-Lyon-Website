@@ -1,17 +1,18 @@
 import css from "./Featured.module.css"
 import Image from "next/image"
 import Link from "next/link"
-import { shopifyFetch } from "../../lib/shopify"
 import { FEATURED_COLLECTION_PRODUCTS } from "../../services/queries"
+import { shopifyFetch } from "@/app/lib/shopify";
+import { Product, ProductConnection } from "../../types/shopify";
 
 export default async function Featured() {
-  const data = await shopifyFetch<{ collection: { title: string, products: { edges: { node: any }[] } } | null }>({
-    query: FEATURED_COLLECTION_PRODUCTS,
-    variables: { handle: "featured", first: 4 },
+  const data = await shopifyFetch<{ products: ProductConnection }>({
+    query: FEATURED_TAG_PRODUCTS,
+    variables: { first: 4 },
     cache: "no-store",
   });
 
-  const products = data.collection?.products.edges.map(e => e.node) ?? [];
+  const products: Product[] = data.products.edges.map(e => e.node);
 
   return (
     <div className={css.container}>

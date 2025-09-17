@@ -5,14 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "@/app/components/AddToCartButton";
 import css from "./Store.module.css";
+import { Product } from "../../types/shopify";
 
-export default function StoreClient({
-  products,
-  inCartIds,
-}: {
-  products: any[];
-  inCartIds: string[];
-}) {
+export default function StoreClient({ products, inCartIds }: { products: Product[]; inCartIds: Set<string> }) {
   const [q, setQ] = useState("");
   const inCart = useMemo(() => new Set(inCartIds), [inCartIds]);
 

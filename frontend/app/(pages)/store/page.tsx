@@ -2,6 +2,7 @@ import { shopifyFetch } from "@/app/lib/shopify";
 import { PRODUCTS_QUERY, CART_QUERY } from "@/app/services/queries";
 import { cookies } from "next/headers";
 import StoreClient from "./StoreClient";
+import { Product, ProductConnection } from "../../types/shopify";
 
 export default async function Store() {
   const data = await shopifyFetch<{ products: { edges: { node: any }[] } }>({

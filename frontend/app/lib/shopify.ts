@@ -1,41 +1,38 @@
-const DOMAIN = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!;
-const VERSION = process.env.NEXT_PUBLIC_SHOPIFY_API_VERSION || "2025-01";
-const PUBLIC_TOKEN = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_PUBLIC_TOKEN!;
-const PRIVATE_TOKEN = process.env.SHOPIFY_STOREFRONT_PRIVATE_TOKEN;
+// app/lib/shopify.ts
+import "server-only";
+import { GraphQLResponse } from "../types/shopify";
 
-const ENDPOINT = `https://${DOMAIN}/api/${VERSION}/graphql.json`;
-
-type FetchArgs = {
+type ShopifyFetchOptions<V extends Record<string, unknown> | undefined = undefined> = {
   query: string;
-  variables?: Record<string, any>;
-  usePrivateToken?: boolean;
-  cache?: RequestCache;
+  variables?: V;
+  cache?: RequestCache | "no-store";
+  tags?: string[];
 };
 
-export async function shopifyFetch<T = any>({
-  query,
-  variables = {},
-  usePrivateToken = false,
-  cache = "force-cache",
-}: FetchArgs): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Shopify-Storefront-Access-Token":
-      usePrivateToken && PRIVATE_TOKEN ? PRIVATE_TOKEN : PUBLIC_TOKEN,
-  };
-
-  const res = await fetch(ENDPOINT, {
+export async function shopifyFetch<TData, V extends Record<string, unknown> | undefined = undefined>(
+  { query, variables, cache = "no-store", tags }: ShopifyFetchOptions<V>
+): Promise<TData> {
+  const res = await fetch(process.env.SHOPIFY_STORE_DOMAIN as string, {
     method: "POST",
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Storefront-Access-Token": process.env.SHOPIFY_STOREFRONT_API_TOKEN as string,
+    },
     body: JSON.stringify({ query, variables }),
     cache,
-    next: { revalidate: 60 },
+    ...(tags ? { next: { tags } } : {}),
   });
 
-  if (!res.ok) throw new Error(`Shopify ${res.status}: ${await res.text()}`);
-  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(`Shopify fetch failed: ${res.status} ${res.statusText}`);
+  }
+
+  const json = (await res.json()) as GraphQLResponse<TData>;
   if (json.errors?.length) {
-    throw new Error(json.errors.map((e: any) => e.message).join(" | "));
+    throw new Error(json.errors.map(e => e.message).join("; "));
+  }
+  if (!json.data) {
+    throw new Error("No data returned from Shopify");
   }
   return json.data;
 }

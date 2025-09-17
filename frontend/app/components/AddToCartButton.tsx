@@ -1,18 +1,15 @@
-'use client';
+"use client";
 import { useState } from "react";
-import "../css/AddToCartButton.css"
+import type { Cart } from "../types/shopify";
+
+type AddResponse = Cart;
 
 export default function AddToCartButton({
   merchandiseId,
   className,
-  initialAdded = false,
-}: {
-  merchandiseId: string;
-  className?: string;
-  initialAdded?: boolean;
-}) {
+}: { merchandiseId: string; className?: string }) {
   const [loading, setLoading] = useState(false);
-  const [added, setAdded] = useState<boolean>(initialAdded);
+  const [added, setAdded] = useState(false);
 
   const add = async () => {
     if (added) return;
@@ -23,15 +20,8 @@ export default function AddToCartButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ merchandiseId, quantity: 1 }),
       });
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "Failed to add");
-
-      const qty = json.cart?.totalQuantity ?? 0;
-      window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total: qty } }));
-
-      setAdded(true);
-    } catch (e: any) {
-      alert(e.message);
+      const json: AddResponse = await res.json();
+      if (json?.id) setAdded(true);
     } finally {
       setLoading(false);
     }
@@ -40,10 +30,11 @@ export default function AddToCartButton({
   return (
     <button
       onClick={add}
-      disabled={loading || added}
       className={`${className ?? ""} ${added ? "added-to-cart" : ""}`}
+      disabled={loading || added}
+      aria-pressed={added}
     >
-      {loading ? "Adding..." : added ? "ADDED TO CART" : "Add to Cart"}
+      {added ? "Added" : loading ? "Adding..." : "Add to Cart"}
     </button>
   );
 }

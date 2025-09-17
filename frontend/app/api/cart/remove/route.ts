@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { shopifyFetch } from "../../../lib/shopify";
-import { CART_LINES_REMOVE, CART_QUERY } from "../../../services/queries";
+import { CART_LINES_REMOVE } from "../../../services/queries";
 
 // const COOKIE = "bl_cartId";
 

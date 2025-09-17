@@ -3,6 +3,7 @@ import Image from "next/image";
 import AddToCartButton from "@/app/components/AddToCartButton";
 import { shopifyFetch } from "../../lib/shopify";
 import Link from "next/link";
+import { Product } from "../../types/shopify";
 
 const PRODUCT_BY_HANDLE = `
   query ProductByHandle($handle: String!) {
@@ -55,7 +56,7 @@ export default async function ItemPage({ params }: { params: { handle: string } 
     cache: "no-store",
   });
 
-  const product = data.product;
+  const product: Product | undefined = data?.product;
   const variant = product?.variants?.edges?.[0]?.node;
   const variantId: string | undefined = variant?.id;
   const available: boolean = Boolean(variant?.availableForSale);
