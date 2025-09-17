@@ -1,10 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import css from "./Store.module.css";
-import { shopifyFetch } from "../../lib/shopify";
-import { PRODUCTS_QUERY, CART_QUERY } from "../../services/queries";
-import AddToCartButton from "@/app/components/AddToCartButton";
+import { shopifyFetch } from "@/app/lib/shopify";
+import { PRODUCTS_QUERY, CART_QUERY } from "@/app/services/queries";
 import { cookies } from "next/headers";
+import StoreClient from "./StoreClient";
 
 export default async function Store() {
   const data = await shopifyFetch<{ products: { edges: { node: any }[] } }>({
@@ -31,57 +28,5 @@ export default async function Store() {
 
   const products = data.products.edges.map(e => e.node);
 
-  return (
-    <div className={css.container}>
-      <div className={css["search-container"]}>
-        <input placeholder="Search Products" className={css.search} />
-      </div>
-
-      <div className={css["products-container"]}>
-        {products.map((p: any) => {
-          const variantId = p.variants?.edges?.[0]?.node?.id as string | undefined;
-          const initialAdded = !!variantId && inCart.has(variantId);
-
-          return (
-            <div key={p.id} className={css["product-card"]}>
-              <Link href={`/${p.handle}`} className={css["product-img"]}>
-                {p.featuredImage && (
-                  <Image
-                    className={css["product-img-tag"]}
-                    width={300}
-                    height={300}
-                    src={p.featuredImage.url}
-                    alt={p.featuredImage.altText ?? p.title}
-                  />
-                )}
-              </Link>
-
-              <div className={css["product-text-cover"]}>
-                <Link href={`/product/${p.handle}`} className={css["product-title-link"]}>
-                  <p className={css["product-title"]}>{p.title}</p>
-                </Link>
-                <p className={css["product-price"]}>
-                  ${Number(p.priceRange.minVariantPrice.amount).toFixed(2)}
-                </p>
-              </div>
-
-              <div className={css["product-btn-cover"]}>
-                {variantId ? (
-                  <AddToCartButton
-                    merchandiseId={variantId}
-                    className={css["cart-btn"]}
-                    initialAdded={initialAdded}
-                  />
-                ) : (
-                  <button className={css["cart-btn"]} disabled>
-                    Unavailable
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return <StoreClient products={products} inCartIds={[...inCart]} />;
 }
