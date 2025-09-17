@@ -10,25 +10,19 @@ export default function AddToCartButton({
   const add = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/cart/create", {
+      const res = await fetch("/api/cart/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ merchandiseId, quantity: 1 }),
       });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || "Failed to add");
 
-      const ct = res.headers.get("content-type") || "";
-      const payload = ct.includes("application/json")
-        ? await res.json().catch(() => ({}))
-        : { ok: false, error: await res.text() };
-
-      if (!res.ok || !payload.ok) {
-        throw new Error(payload.error || `HTTP ${res.status}`);
-      }
-
-      window.location.href = payload.checkoutUrl;
-    } catch (err: any) {
-      alert(err?.message || "Failed to add to cart");
-      console.error(err);
+      // notify listeners (navbar) about new total
+      const qty = json.cart?.totalQuantity ?? 0;
+      window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total: qty } }));
+    } catch (e: any) {
+      alert(e.message);
     } finally {
       setLoading(false);
     }

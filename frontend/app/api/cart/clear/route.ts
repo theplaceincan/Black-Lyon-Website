@@ -1,0 +1,29 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { shopifyFetch } from "../../../lib/shopify";
+import { CART_QUERY, CART_LINES_REMOVE } from "../../../services/queries";
+
+const COOKIE = "bl_cartId";
+
+export async function POST() {
+  try {
+    const jar = cookies();
+    const cartId = jar.get(COOKIE)?.value;
+    if (!cartId) return NextResponse.json({ ok: true, cart: null });
+
+    const current = await shopifyFetch<any>({ query: CART_QUERY, variables: { id: cartId } });
+    const lineIds: string[] =
+      current?.cart?.lines?.edges?.map((e: any) => e.node.id) ?? [];
+
+    if (!lineIds.length) return NextResponse.json({ ok: true, cart: current.cart });
+
+    const data = await shopifyFetch<any>({
+      query: CART_LINES_REMOVE,
+      variables: { cartId, lineIds },
+    });
+
+    return NextResponse.json({ ok: true, cart: data.cartLinesRemove.cart });
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e.message || "Internal error" }, { status: 500 });
+  }
+}

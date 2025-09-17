@@ -1,41 +1,74 @@
-import css from "./Cart.module.css"
-import Image from "next/image"
-import Link from "next/link"
+import css from "./Cart.module.css";
+import Image from "next/image";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { shopifyFetch } from "../../lib/shopify";
+import { CART_QUERY } from "../../services/queries";
+import { ClearCartButton, RemoveLineButton } from "./CartClientButtons";
 
-export default function Cart() {
+export default async function Cart() {
+  const cartId = cookies().get("bl_cartId")?.value || null;
+  let cart: any = null;
+
+  if (cartId) {
+    const data = await shopifyFetch<{ cart: any }>({
+      query: CART_QUERY,
+      variables: { id: cartId },
+    });
+    cart = data.cart;
+  }
+
+  const items = cart?.lines?.edges ?? [];
+  const empty = !cart || !items.length;
+
   return (
     <div className={css["container"]}>
       <p className={css["page-title"]}>Cart</p>
+
       <div className={css["cart-system-cover"]}>
         <div className={css["cart-start-actions-container"]}>
-          <button className={css["cart-clear-btn"]}>
-            Clear
-          </button>
+          {!empty && <ClearCartButton className={css["cart-clear-btn"]} />}
         </div>
+
         <div className={css["items-container"]}>
-          <div className={css["item-card"]}>
-            <div className={css["item-card-info-cover"]}>
-              <div className={css["item-img-cover"]}>
-                <Image className={css["item-img"]} src={'/lyon.png'} width={70} height={0} alt="img"></Image>
-              </div>
-              <div className={css["item-card-texts"]}>
-                <Link href={'/'} className={css["item-card-title"]}>New Product Title</Link>
-                <p className={css["item-card-price"]}>$30.00</p>
-              </div>
-            </div>
-            <div className={css["item-card-actions"]}>
-              <button className={css["remove-item-btn"]}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                </svg>
-              </button>
-            </div>
+          {empty ? (
+            <p className={css["empty"]}>Your cart is empty.</p>
+          ) : (
+            items.map((edge: any) => {
+              const line = edge.node;
+              const v = line.merchandise;
+              const img = v.image?.url;
+              const title = v.product?.title ?? v.title;
+              const price = v.price?.amount;
+              return (
+                <div key={line.id} className={css["item-card"]}>
+                  <div className={css["item-card-info-cover"]}>
+                    <div className={css["item-img-cover"]}>
+                      {img && <Image className={css["item-img"]} src={img} width={70} height={70} alt={title} />}
+                    </div>
+                    <div className={css["item-card-texts"]}>
+                      <Link href={`/product/${v.product?.handle ?? ""}`} className={css["item-card-title"]}>
+                        {title}
+                      </Link>
+                      <p className={css["item-card-price"]}>${Number(price).toFixed(2)}</p>
+                      <p className={css["item-qty"]}>Qty: {line.quantity}</p>
+                    </div>
+                  </div>
+                  <div className={css["item-card-actions"]}>
+                    <RemoveLineButton lineId={line.id} className={css["remove-item-btn"]} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {!empty && (
+          <div className={css["cart-end-actions-container"]}>
+            <a className={css["cart-buy-btn"]} href={cart.checkoutUrl}>Buy Now</a>
           </div>
-        </div>
-        <div className={css["cart-end-actions-container"]}>
-          <button className={css["cart-buy-btn"]}>Buy Now</button>
-        </div>
-       </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }

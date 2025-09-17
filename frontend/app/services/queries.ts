@@ -17,10 +17,61 @@ export const PRODUCTS_QUERY = `
   }
 `;
 
-export const CART_CREATE = `
+export const CART_QUERY = /* GraphQL */ `
+  query Cart($id: ID!) {
+    cart(id: $id) {
+      id
+      checkoutUrl
+      totalQuantity
+      lines(first: 50) {
+        edges {
+          node {
+            id
+            quantity
+            merchandise {
+              ... on ProductVariant {
+                id
+                title
+                image { url altText }
+                product { title handle }
+                price { amount currencyCode }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CART_LINES_ADD = /* GraphQL */ `
+  mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+    cartLinesAdd(cartId: $cartId, lines: $lines) {
+      cart { id totalQuantity checkoutUrl
+        lines(first: 50) { edges { node { id quantity } } }
+      }
+      userErrors { field message }
+    }
+  }
+`;
+
+export const CART_LINES_REMOVE = /* GraphQL */ `
+  mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+    cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart { id totalQuantity checkoutUrl
+        lines(first: 50) { edges { node { id quantity } } }
+      }
+      userErrors { field message }
+    }
+  }
+`;
+
+export const CART_CREATE = /* GraphQL */ `
   mutation CartCreate($lines: [CartLineInput!]) {
     cartCreate(input: { lines: $lines }) {
-      cart { id checkoutUrl }
+      cart { id checkoutUrl totalQuantity
+        lines(first: 50) { edges { node { id quantity } } }
+      }
       userErrors { field message }
     }
   }
