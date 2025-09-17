@@ -7,11 +7,11 @@ const COOKIE = "bl_cartId";
 
 export async function POST() {
   try {
-    const jar = cookies();
-    const cartId = jar.get(COOKIE)?.value;
+    const jar = await cookies();
+    const cartId = jar.get("bl_cartId")?.value;
     if (!cartId) return NextResponse.json({ ok: true, cart: null });
 
-    const current = await shopifyFetch<any>({ query: CART_QUERY, variables: { id: cartId } });
+    const current = await shopifyFetch<any>({ query: CART_QUERY, variables: { id: cartId }, cache: "no-store" });
     const lineIds: string[] =
       current?.cart?.lines?.edges?.map((e: any) => e.node.id) ?? [];
 

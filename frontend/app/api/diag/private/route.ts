@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const data = await shopifyFetch<{ shop: { name: string } }>({
       query: `query { shop { name } }`,
-      usePrivateToken: true,           // <-- force private token
+      usePrivateToken: true,
     });
     return NextResponse.json({ ok: true, shop: data.shop.name });
   } catch (e: any) {

@@ -12,13 +12,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Missing merchandiseId" }, { status: 400 });
     }
 
-    const jar = cookies();
-    let cartId = jar.get(COOKIE)?.value;
+    const jar = await cookies();
+    let cartId = jar.get(COOKIE)?.value || ""; 
 
     if (!cartId) {
       const created = await shopifyFetch<any>({
         query: CART_CREATE,
         variables: { lines: [{ merchandiseId, quantity }] },
+        cache: "no-store"
       });
       const err = created?.cartCreate?.userErrors?.[0]?.message;
       if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
     const added = await shopifyFetch<any>({
       query: CART_LINES_ADD,
       variables: { cartId, lines: [{ merchandiseId, quantity }] },
+      cache: "no-store"
     });
     const err = added?.cartLinesAdd?.userErrors?.[0]?.message;
     if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });

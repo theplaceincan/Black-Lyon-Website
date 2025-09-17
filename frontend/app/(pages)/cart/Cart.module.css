@@ -27,6 +27,10 @@
 
 /* Item Card */
 
+.item-qty {
+  color: white;
+}
+
 .items-container {
   display: flex;
   justify-content: center;
@@ -138,4 +142,51 @@
   background-color: white;
   border: 1px solid black;
   color: black;
+}
+
+.empty {
+  color: white;
+}
+
+.empty-shop-btn {
+  margin-top: 10px;
+  cursor: pointer;
+  padding: 10px 21px;
+  background-color: black;
+  border: 1px solid rgb(71, 71, 71);
+  color: white;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-shop-btn:hover {
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+}
+
+/* Quantity */
+
+.qty-btn {
+  cursor: pointer;
+  color: white;
+  font-size: 23px;
+
+  background-color: rgb(14, 14, 14);
+}
+
+.qty {
+  margin-left: 5px;
+  margin-right: 5px;
+  color: white;
+  border: 1px solid rgb(78, 78, 78);
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.qty-row {
+  display: flex;
+  align-items: center;
 }

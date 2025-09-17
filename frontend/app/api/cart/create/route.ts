@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const data = await shopifyFetch({
       query: CART_CREATE,
       variables: { lines: [{ merchandiseId, quantity }] },
-\    });
+    });
 
     const err = data.cartCreate?.userErrors?.[0]?.message;
     if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });

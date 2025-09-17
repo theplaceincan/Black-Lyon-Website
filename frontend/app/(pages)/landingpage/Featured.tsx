@@ -1,30 +1,42 @@
 import css from "./Featured.module.css"
 import Image from "next/image"
 import Link from "next/link"
+import { shopifyFetch } from "../../lib/shopify"
+import { FEATURED_COLLECTION_PRODUCTS } from "../../services/queries"
 
-export default function Featured() {
+export default async function Featured() {
+  const data = await shopifyFetch<{ collection: { title: string, products: { edges: { node: any }[] } } | null }>({
+    query: FEATURED_COLLECTION_PRODUCTS,
+    variables: { handle: "featured", first: 4 },
+    cache: "no-store",
+  });
+
+  const products = data.collection?.products.edges.map(e => e.node) ?? [];
+
   return (
-    <div className={css["container"]}>
-      <p className={css["page-title"]}>THE OFFICIAL COLLECTION</p>
+    <div className={css.container}>
+      <p className={css["page-title"]}>FEATURED COLLECTION</p>
       <div className={css["featured-products-container"]}>
-        <div className={css["product-card"]}>
-          <div className={css["product-img"]}>
-            <Image width={300} height={30} src={'/lyon.png'} alt="Biniyam T-Shirt"></Image>
+        {products.map((p: any) => (
+          <div key={p.id} className={css["product-card"]}>
+            <Link href={`/${p.handle}`} className={css["product-img"]}>
+              {p.featuredImage && (
+                <Image width={300} height={300} src={p.featuredImage.url} alt={p.featuredImage.altText ?? p.title}/>
+              )}
+            </Link>
+            <div className={css["product-text-cover"]}>
+              <p className={css["product-title"]}>{p.title}</p>
+              <p className={css["product-price"]}>
+                ${Number(p.priceRange.minVariantPrice.amount).toFixed(2)}
+              </p>
+            </div>
+            <div className={css["product-btn-cover"]}>
+              <button className={css["cart-btn"]}>Add to Cart</button>
+            </div>
           </div>
-          <div className={css["product-text-cover"]}>
-            <p className={css["product-title"]}>New Biniyam T-Shirt</p>
-            <p className={css["product-price"]}>$50.00</p>
-          </div>
-          <div className={css["product-btn-cover"]}>
-            <button className={css["cart-btn"]}>Add to Cart</button>
-          </div>
-        </div>
+        ))}
       </div>
-      <Link href={'/store'}>
-        <button className={css["more-btn"]}>
-          See More
-        </button>
-      </Link>
+      <Link href="/store"><button className={css["more-btn"]}>See More</button></Link>
     </div>
   )
 }

@@ -9,12 +9,14 @@ type FetchArgs = {
   query: string;
   variables?: Record<string, any>;
   usePrivateToken?: boolean;
+  cache?: RequestCache;
 };
 
-export async function shopifyFetch<T>({
+export async function shopifyFetch<T = any>({
   query,
   variables = {},
   usePrivateToken = false,
+  cache = "force-cache",
 }: FetchArgs): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -26,6 +28,7 @@ export async function shopifyFetch<T>({
     method: "POST",
     headers,
     body: JSON.stringify({ query, variables }),
+    cache,
     next: { revalidate: 60 },
   });
 

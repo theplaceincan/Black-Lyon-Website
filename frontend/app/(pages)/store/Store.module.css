@@ -101,7 +101,6 @@
   display: flex;
 }
 
-/* this class is now passed into AddToCartButton */
 .cart-btn {
   flex-grow: 1;
   cursor: pointer;

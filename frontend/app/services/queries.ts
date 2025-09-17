@@ -1,3 +1,5 @@
+// shopify graphql queries
+
 export const PRODUCTS_QUERY = `
   query Products($first: Int = 20) {
     products(first: $first) {
@@ -17,7 +19,22 @@ export const PRODUCTS_QUERY = `
   }
 `;
 
-export const CART_QUERY = /* GraphQL */ `
+export const CART_LINES_UPDATE = `
+  mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+    cartLinesUpdate(cartId: $cartId, lines: $lines) {
+      cart { id totalQuantity checkoutUrl
+        lines(first: 50) {
+          edges { node { id quantity
+            merchandise { ... on ProductVariant { id title image { url altText } product { title handle } price { amount currencyCode } } }
+          } }
+        }
+      }
+      userErrors { field message }
+    }
+  }
+`;
+
+export const CART_QUERY = `
   query Cart($id: ID!) {
     cart(id: $id) {
       id
@@ -44,7 +61,7 @@ export const CART_QUERY = /* GraphQL */ `
   }
 `;
 
-export const CART_LINES_ADD = /* GraphQL */ `
+export const CART_LINES_ADD = `
   mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart { id totalQuantity checkoutUrl
@@ -55,7 +72,7 @@ export const CART_LINES_ADD = /* GraphQL */ `
   }
 `;
 
-export const CART_LINES_REMOVE = /* GraphQL */ `
+export const CART_LINES_REMOVE = `
   mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart { id totalQuantity checkoutUrl
@@ -66,13 +83,34 @@ export const CART_LINES_REMOVE = /* GraphQL */ `
   }
 `;
 
-export const CART_CREATE = /* GraphQL */ `
+export const CART_CREATE = `
   mutation CartCreate($lines: [CartLineInput!]) {
     cartCreate(input: { lines: $lines }) {
       cart { id checkoutUrl totalQuantity
         lines(first: 50) { edges { node { id quantity } } }
       }
       userErrors { field message }
+    }
+  }
+`;
+
+export const FEATURED_COLLECTION_PRODUCTS = `
+  query FeaturedCollection($handle: String!, $first: Int = 4) {
+    collection(handle: $handle) {
+      id
+      title
+      products(first: $first) {
+        edges {
+          node {
+            id
+            handle
+            title
+            featuredImage { url altText }
+            priceRange { minVariantPrice { amount currencyCode } }
+            variants(first: 1) { edges { node { id title } } }
+          }
+        }
+      }
     }
   }
 `;
