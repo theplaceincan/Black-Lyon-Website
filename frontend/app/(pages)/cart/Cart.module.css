@@ -89,6 +89,12 @@
 .item-card-actions {
   display: flex;
   align-items: center;
+  justify-content: start;
+}
+
+.item-img-cover {
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
@@ -148,6 +154,11 @@
   color: white;
 }
 
+.buy-more-text {
+  color: white;
+  text-decoration: underline;
+}
+
 .empty-shop-btn {
   margin-top: 10px;
   cursor: pointer;
@@ -173,17 +184,28 @@
   cursor: pointer;
   color: white;
   font-size: 23px;
-
   background-color: rgb(14, 14, 14);
+  border: 1px solid rgb(14, 14, 14);
 }
-
+.qty-btn:hover {
+  background-color: rgb(32, 32, 32);
+  border: 1px solid rgb(56, 56, 56);
+}
+.qty-btn:active {
+  background-color: rgb(45, 45, 45);
+}
 .qty {
   margin-left: 5px;
   margin-right: 5px;
   color: white;
-  border: 1px solid rgb(78, 78, 78);
-  padding-left: 9px;
-  padding-right: 9px;
+  background-color: rgb(65, 64, 64);
+  width: 35px;
+  text-align: center;
+}
+.qty::-webkit-outer-spin-button,
+.qty::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .qty-row {

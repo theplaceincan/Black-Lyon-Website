@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AddToCartButton({
   merchandiseId,
@@ -12,6 +12,40 @@ export default function AddToCartButton({
 }) {
   const [added, setAdded] = useState(initialAdded);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (added) return;
+    let aborted = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/cart/get", { cache: "no-store" });
+        const json = await res.json().catch(() => ({}));
+        const present = (json?.cart?.lines?.edges ?? []).some(
+          (e: any) => e?.node?.merchandise?.id === merchandiseId
+        );
+        if (!aborted && present) setAdded(true);
+      } catch {}
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [merchandiseId, added]);
+
+  useEffect(() => {
+    const onUpdated = () => {
+      fetch("/api/cart/get", { cache: "no-store" })
+        .then(r => r.json())
+        .then(json => {
+          const present = (json?.cart?.lines?.edges ?? []).some(
+            (e: any) => e?.node?.merchandise?.id === merchandiseId
+          );
+          if (present) setAdded(true);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener("cart:updated", onUpdated);
+    return () => window.removeEventListener("cart:updated", onUpdated);
+  }, [merchandiseId]);
 
   const onClick = async () => {
     if (busy || added) return;
@@ -26,9 +60,7 @@ export default function AddToCartButton({
       if (!res.ok || json?.ok === false) {
         throw new Error(json?.error || "Failed to add to cart");
       }
-
       setAdded(true);
-
       const total = json?.cart?.totalQuantity;
       window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total } }));
     } finally {
@@ -41,9 +73,10 @@ export default function AddToCartButton({
       type="button"
       onClick={onClick}
       disabled={busy || added}
-      className={`${className ?? ""} ${added ? "added" : ""}`.trim()}
+      aria-busy={busy}
+      className={`${className ?? ""} ${added ? "added-to-cart" : ""}`.trim()}
     >
-      {added ? "ADDED" : "ADD TO CART"}
+      {busy ? "ADDING..." : added ? "ADDED" : "ADD TO CART"}
     </button>
   );
 }

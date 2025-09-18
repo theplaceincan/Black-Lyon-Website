@@ -19,39 +19,35 @@ export const PRODUCTS_QUERY = `
   }
 `;
 
-export const CART_LINES_UPDATE = `
-  mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
-    cartLinesUpdate(cartId: $cartId, lines: $lines) {
-      cart { id totalQuantity checkoutUrl
-        lines(first: 50) {
-          edges { node { id quantity
-            merchandise { ... on ProductVariant { id title image { url altText } product { title handle } price { amount currencyCode } } }
-          } }
-        }
-      }
-      userErrors { field message }
-    }
-  }
-`;
-
 export const CART_QUERY = `
   query Cart($id: ID!) {
     cart(id: $id) {
       id
       checkoutUrl
       totalQuantity
+      cost {                       # ADDED (optional but nice)
+        subtotalAmount { amount currencyCode }
+        totalAmount    { amount currencyCode }
+      }
       lines(first: 50) {
         edges {
           node {
             id
             quantity
+            cost {                  # ADDED (needed by your UI)
+              amountPerQuantity { amount currencyCode }
+              totalAmount       { amount currencyCode }
+            }
             merchandise {
               ... on ProductVariant {
                 id
                 title
-                image { url altText }
-                product { title handle }
-                price { amount currencyCode }
+                product {
+                  title
+                  handle
+                  featuredImage { url altText }  # ADDED (your UI uses product.featuredImage)
+                }
+                price { amount currencyCode }    # optional fallback
               }
             }
           }
@@ -64,8 +60,79 @@ export const CART_QUERY = `
 export const CART_LINES_ADD = `
   mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
-      cart { id totalQuantity checkoutUrl
-        lines(first: 50) { edges { node { id quantity } } }
+      cart {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+          subtotalAmount { amount currencyCode }
+          totalAmount    { amount currencyCode }
+        }
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              cost {
+                amountPerQuantity { amount currencyCode }
+                totalAmount       { amount currencyCode }
+              }
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                    featuredImage { url altText }
+                  }
+                  price { amount currencyCode }
+                }
+              }
+            }
+          }
+        }
+      }
+      userErrors { field message }
+    }
+  }
+`;
+
+export const CART_LINES_UPDATE = `
+  mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+    cartLinesUpdate(cartId: $cartId, lines: $lines) {
+      cart {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+          subtotalAmount { amount currencyCode }
+          totalAmount    { amount currencyCode }
+        }
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              cost {
+                amountPerQuantity { amount currencyCode }
+                totalAmount       { amount currencyCode }
+              }
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                    featuredImage { url altText }
+                  }
+                  price { amount currencyCode }
+                }
+              }
+            }
+          }
+        }
       }
       userErrors { field message }
     }
@@ -75,8 +142,38 @@ export const CART_LINES_ADD = `
 export const CART_LINES_REMOVE = `
   mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
-      cart { id totalQuantity checkoutUrl
-        lines(first: 50) { edges { node { id quantity } } }
+      cart {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+          subtotalAmount { amount currencyCode }
+          totalAmount    { amount currencyCode }
+        }
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              cost {
+                amountPerQuantity { amount currencyCode }
+                totalAmount       { amount currencyCode }
+              }
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                    featuredImage { url altText }
+                  }
+                  price { amount currencyCode }
+                }
+              }
+            }
+          }
+        }
       }
       userErrors { field message }
     }
@@ -86,8 +183,38 @@ export const CART_LINES_REMOVE = `
 export const CART_CREATE = `
   mutation CartCreate($lines: [CartLineInput!]) {
     cartCreate(input: { lines: $lines }) {
-      cart { id checkoutUrl totalQuantity
-        lines(first: 50) { edges { node { id quantity } } }
+      cart {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+          subtotalAmount { amount currencyCode }
+          totalAmount    { amount currencyCode }
+        }
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              cost {
+                amountPerQuantity { amount currencyCode }
+                totalAmount       { amount currencyCode }
+              }
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  product {
+                    title
+                    handle
+                    featuredImage { url altText }
+                  }
+                  price { amount currencyCode }
+                }
+              }
+            }
+          }
+        }
       }
       userErrors { field message }
     }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import css from "./Cart.module.css";
 
 type MoneyV2 = { amount: string; currencyCode: string };
-
 type CartLineNode = {
   id: string;
   quantity: number;
@@ -23,10 +23,10 @@ type CartLineNode = {
     amountPerQuantity?: MoneyV2;
   };
 };
-
 type Cart = {
   id: string;
   checkoutUrl?: string;
+  totalQuantity?: number;
   lines: { edges: { node: CartLineNode }[] };
 };
 
@@ -35,15 +35,19 @@ export default function CartContents() {
   const [loading, setLoading] = useState(true);
   const [busyLine, setBusyLine] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // local “draft” values for qty inputs
+  const [draftQty, setDraftQty] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const res = await fetch("/api/cart/get", { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to load cart");
-      const json = (await res.json()) as { cart: Cart | null };
+      const json = (await res.json()) as { ok: boolean; cart: Cart | null };
       setCart(json.cart ?? null);
+      const dq: Record<string, string> = {};
+      json.cart?.lines?.edges?.forEach(({ node }) => (dq[node.id] = String(node.quantity)));
+      setDraftQty(dq);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -51,36 +55,46 @@ export default function CartContents() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
+  const lines = cart?.lines?.edges ?? [];
   const subtotal = useMemo(() => {
-    const lines = cart?.lines?.edges ?? [];
-    const sum = lines.reduce((acc, e) => {
-      const amt = Number(e.node.cost?.totalAmount?.amount ?? 0);
-      return acc + (isFinite(amt) ? amt : 0);
+    return lines.reduce((sum, e) => {
+      const each = Number(e.node.cost?.totalAmount?.amount ?? 0);
+      return sum + (isFinite(each) ? each : 0);
     }, 0);
-    return sum;
-  }, [cart]);
+  }, [lines]);
 
-  const emitCartChanged = () => window.dispatchEvent(new Event("cart:changed"));
+  const notify = (total?: number) =>
+    window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total } }));
+
+  const setCartFromResponse = (json: any) => {
+    const newCart: Cart | null = json?.cart ?? null;
+    setCart(newCart);
+    if (newCart) {
+      const dq: Record<string, string> = {};
+      newCart.lines?.edges?.forEach(({ node }) => (dq[node.id] = String(node.quantity)));
+      setDraftQty(dq);
+    }
+  };
 
   const updateQty = async (lineId: string, quantity: number) => {
     if (quantity < 1) return removeLine(lineId);
     try {
       setBusyLine(lineId);
-      setError(null);
       const res = await fetch("/api/cart/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lineId, quantity }),
       });
-      if (!res.ok) throw new Error("Failed to update quantity");
-      await load();
-      emitCartChanged();
+      const json = await res.json();
+      if (!res.ok || json?.ok === false) throw new Error(json?.error || "Failed");
+      setCartFromResponse(json);
+      notify(json?.cart?.totalQuantity);
     } catch (e) {
       setError((e as Error).message);
+      const current = lines.find(l => l.node.id === lineId)?.node.quantity ?? 1;
+      setDraftQty(d => ({ ...d, [lineId]: String(current) }));
     } finally {
       setBusyLine(null);
     }
@@ -89,15 +103,15 @@ export default function CartContents() {
   const removeLine = async (lineId: string) => {
     try {
       setBusyLine(lineId);
-      setError(null);
       const res = await fetch("/api/cart/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lineId }),
       });
-      if (!res.ok) throw new Error("Failed to remove item");
-      await load();
-      emitCartChanged();
+      const json = await res.json();
+      if (!res.ok || json?.ok === false) throw new Error(json?.error || "Failed");
+      setCartFromResponse(json);
+      notify(json?.cart?.totalQuantity);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -107,100 +121,133 @@ export default function CartContents() {
 
   const clearCart = async () => {
     try {
-      setError(null);
       const res = await fetch("/api/cart/clear", { method: "POST" });
-      if (!res.ok) throw new Error("Failed to clear cart");
-      await load();
-      emitCartChanged();
+      const json = await res.json();
+      if (!res.ok || json?.ok === false) throw new Error(json?.error || "Failed");
+      setCartFromResponse(json);
+      notify(json?.cart?.totalQuantity ?? 0);
     } catch (e) {
       setError((e as Error).message);
     }
   };
 
-  if (loading) return <p>Loading cart…</p>;
-  if (error) return <p role="alert">Error: {error}</p>;
+  const commitDraft = (lineId: string) => {
+    const raw = draftQty[lineId];
+    const n = Math.max(1, Math.min(9999, Number(raw)));
+    if (!Number.isFinite(n)) return;
+    const current = lines.find(l => l.node.id === lineId)?.node.quantity ?? 1;
+    if (n !== current) updateQty(lineId, n);
+    else setDraftQty(d => ({ ...d, [lineId]: String(current) }));
+  };
 
-  const lines = cart?.lines?.edges ?? [];
+  if (loading) return <p className={css["empty"]}>Loading…</p>;
+  if (error) return <p className={css["empty"]}>Error: {error}</p>;
 
   if (!cart || lines.length === 0) {
     return (
-      <div>
-        <p>Your cart is empty.</p>
-        <Link href="/store" className="underline">Continue shopping →</Link>
-      </div>
+      <>
+        <p className={css["empty"]}>Your cart is empty.</p>
+        <Link href="/store"><button className={css["empty-shop-btn"]}>Shop</button></Link>
+      </>
     );
   }
 
   return (
-    <div className={css["items-container"]}>
-      <ul className={css["items-container"]}>
+    <>
+      <div className={css["cart-start-actions-container"]}>
+        <button onClick={clearCart} className={css["cart-clear-btn"]}>Clear Cart</button>
+      </div>
+
+      <div className={css["items-container"]}>
         {lines.map(({ node }) => {
-          const title =
-            node.merchandise.product?.title ??
-            node.merchandise.title ??
-            "Product";
           const handle = node.merchandise.product?.handle ?? "";
-          const priceEach = Number(node.cost?.amountPerQuantity?.amount ?? 0);
-          const lineTotal = Number(node.cost?.totalAmount?.amount ?? priceEach * node.quantity);
+          const title = node.merchandise.product?.title ?? node.merchandise.title ?? "Product";
+          const img = node.merchandise.product?.featuredImage;
+          const lineTotal =
+            Number(node.cost?.totalAmount?.amount ?? 0) ||
+            Number(node.cost?.amountPerQuantity?.amount ?? 0) * (node.quantity ?? 1);
 
           return (
-            <li key={node.id} className={css["item-card"]}>
-              <div className="min-w-0">
-                <div className="font-medium">
-                  {handle ? <Link href={`/${handle}`} className="underline">{title}</Link> : title}
+            <div key={node.id} className={css["item-card"]}>
+              <div className={css["item-card-info-cover"]}>
+                <div className={css["item-img-cover"]}>
+                  {img ? (
+                    <Image className={css["item-img"]} src={img.url} width={70} height={70} alt={img.altText ?? title} />
+                  ) : (
+                    <Image className={css["item-img"]} src="/lyon.png" width={70} height={70} alt="product" />
+                  )}
                 </div>
-                <div className="text-sm opacity-70">${priceEach.toFixed(2)} each</div>
-                <div className="mt-2 inline-flex items-center gap-2">
-                  <button
-                    onClick={() => updateQty(node.id, node.quantity - 1)}
-                    disabled={busyLine === node.id}
-                    className="px-2 py-1 border rounded"
-                    aria-label="Decrease quantity"
-                  >
-                    −
-                  </button>
-                  <span className="w-8 text-center">{node.quantity}</span>
-                  <button
-                    onClick={() => updateQty(node.id, node.quantity + 1)}
-                    disabled={busyLine === node.id}
-                    className="px-2 py-1 border rounded"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={() => removeLine(node.id)}
-                    disabled={busyLine === node.id}
-                    className="ml-4 text-sm underline"
-                  >
-                    Remove
-                  </button>
+
+                <div className={css["item-card-texts"]}>
+                  {handle ? (
+                    <Link href={`/${handle}`} className={css["item-card-title"]}>{title}</Link>
+                  ) : (
+                    <span className={css["item-card-title"]}>{title}</span>
+                  )}
+                  <p className={css["item-card-price"]}>${lineTotal.toFixed(2)}</p>
+
+                  <div className={css["item-card-actions"]}>
+                    <div className={css["qty-row"]}>
+                      <button
+                        className={css["qty-btn"]}
+                        onClick={() => updateQty(node.id, node.quantity - 1)}
+                        disabled={busyLine === node.id}
+                        aria-label="Decrease"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
+                        </svg>
+                      </button>
+
+                      <input
+                        className={css["qty"]}
+                        type="number"
+                        min={1}
+                        value={draftQty[node.id] ?? String(node.quantity)}
+                        onChange={(e) => setDraftQty(d => ({ ...d, [node.id]: e.target.value }))}
+                        onBlur={() => commitDraft(node.id)}
+                        onKeyDown={(e) => { if (e.key === "Enter") commitDraft(node.id); }}
+                        aria-label="Quantity"
+                      />
+
+                      <button
+                        className={css["qty-btn"]}
+                        onClick={() => updateQty(node.id, node.quantity + 1)}
+                        disabled={busyLine === node.id}
+                        aria-label="Increase"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="text-right font-medium">
-                ${lineTotal.toFixed(2)}
-              </div>
-            </li>
+              <button
+                className={css["remove-item-btn"]}
+                onClick={() => removeLine(node.id)}
+                disabled={busyLine === node.id}
+                title="Remove"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" /><path d="M14 11v6" />
+                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            </div>
           );
         })}
-      </ul>
-
-      <div className="flex items-center justify-between border-t pt-4">
-        <div className={css["item-card-price"]}>Subtotal</div>
-        <div className={css["item-card-price"]}>${subtotal.toFixed(2)}</div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <button onClick={clearCart} className="underline">
-          Clear cart
-        </button>
+      <div className={css["cart-end-actions-container"]}>
         {cart.checkoutUrl ? (
-          <a href={cart.checkoutUrl} className="px-4 py-2 border rounded">
-            Checkout
-          </a>
+          <a href={cart.checkoutUrl} className={css["cart-buy-btn"]}>Buy Now</a>
         ) : null}
       </div>
-    </div>
+    </>
   );
 }

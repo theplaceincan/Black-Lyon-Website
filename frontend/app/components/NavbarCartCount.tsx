@@ -12,12 +12,11 @@ export default function NavbarCartCount() {
       const summed = edges.reduce((n: number, e: any) => n + (e?.node?.quantity ?? 0), 0);
       setCount(json?.cart?.totalQuantity ?? summed ?? 0);
     } catch {
-      // ignore
     }
   };
 
   useEffect(() => {
-    fetchCount(); // initial
+    fetchCount();
 
     const onUpdated = (e: Event) => {
       const det = (e as CustomEvent).detail;
