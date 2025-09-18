@@ -1,53 +1,49 @@
 "use client";
-import { useEffect, useState } from "react";
-
-type Props = {
-  merchandiseId: string;
-  className?: string;
-  initialAdded?: boolean;
-};
+import { useState } from "react";
 
 export default function AddToCartButton({
   merchandiseId,
-  className = "",
+  className,
   initialAdded = false,
-}: Props) {
-  const [loading, setLoading] = useState(false);
-  const [added, setAdded] = useState(Boolean(initialAdded));
+}: {
+  merchandiseId: string;
+  className?: string;
+  initialAdded?: boolean;
+}) {
+  const [added, setAdded] = useState(initialAdded);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    setAdded(Boolean(initialAdded));
-  }, [initialAdded]);
-
-  const add = async () => {
-    if (added || loading) return;
+  const onClick = async () => {
+    if (busy || added) return;
+    setBusy(true);
     try {
-      setLoading(true);
       const res = await fetch("/api/cart/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ merchandiseId, quantity: 1 }),
       });
-      if (!res.ok) throw new Error("Add to cart failed");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.ok === false) {
+        throw new Error(json?.error || "Failed to add to cart");
+      }
+
       setAdded(true);
-      window.dispatchEvent(new Event("cart:changed"));
-    } catch (err) {
-      console.error(err);
+
+      const total = json?.cart?.totalQuantity;
+      window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total } }));
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   return (
     <button
       type="button"
-      onClick={add}
-      disabled={added || loading}
-      className={`${className} ${added ? "added-to-cart" : ""}`}
-      aria-disabled={added || loading}
-      aria-live="polite"
+      onClick={onClick}
+      disabled={busy || added}
+      className={`${className ?? ""} ${added ? "added" : ""}`.trim()}
     >
-      {added ? "Added" : loading ? "Adding..." : "Add to Cart"}
+      {added ? "ADDED" : "ADD TO CART"}
     </button>
   );
 }

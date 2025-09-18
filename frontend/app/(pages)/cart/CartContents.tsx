@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import css from "./Cart.module.css";
 
 type MoneyV2 = { amount: string; currencyCode: string };
 
@@ -131,8 +132,8 @@ export default function CartContents() {
   }
 
   return (
-    <div className="space-y-6">
-      <ul className="divide-y">
+    <div className={css["items-container"]}>
+      <ul className={css["items-container"]}>
         {lines.map(({ node }) => {
           const title =
             node.merchandise.product?.title ??
@@ -143,7 +144,7 @@ export default function CartContents() {
           const lineTotal = Number(node.cost?.totalAmount?.amount ?? priceEach * node.quantity);
 
           return (
-            <li key={node.id} className="py-4 flex items-center justify-between gap-4">
+            <li key={node.id} className={css["item-card"]}>
               <div className="min-w-0">
                 <div className="font-medium">
                   {handle ? <Link href={`/${handle}`} className="underline">{title}</Link> : title}
@@ -186,8 +187,8 @@ export default function CartContents() {
       </ul>
 
       <div className="flex items-center justify-between border-t pt-4">
-        <div className="text-lg font-semibold">Subtotal</div>
-        <div className="text-lg font-semibold">${subtotal.toFixed(2)}</div>
+        <div className={css["item-card-price"]}>Subtotal</div>
+        <div className={css["item-card-price"]}>${subtotal.toFixed(2)}</div>
       </div>
 
       <div className="flex items-center justify-between">
