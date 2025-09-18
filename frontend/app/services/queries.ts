@@ -1,4 +1,4 @@
-// shopify graphql queries
+// these are shopify graphql queries
 
 export const PRODUCTS_QUERY = `
   query Products($first: Int = 20) {

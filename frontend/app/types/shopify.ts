@@ -27,6 +27,10 @@ export type Product = {
   featuredImage?: ShopifyImage | null;
   variants?: { edges: { node: ProductVariant }[] };
   tags?: string[];
+  priceRange?: {
+    minVariantPrice: MoneyV2;
+    maxVariantPrice: MoneyV2;
+  };
 };
 
 export type ProductEdge = { node: Product };

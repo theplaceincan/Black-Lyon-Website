@@ -1,173 +1,205 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import css from "./Cart.module.css";
+
+type MoneyV2 = { amount: string; currencyCode: string };
+
+type CartLineNode = {
+  id: string;
+  quantity: number;
+  merchandise: {
+    id: string;
+    title?: string | null;
+    product?: {
+      handle?: string | null;
+      title?: string | null;
+      featuredImage?: { url: string; altText?: string | null } | null;
+    } | null;
+  };
+  cost?: {
+    totalAmount?: MoneyV2;
+    amountPerQuantity?: MoneyV2;
+  };
+};
 
 type Cart = {
   id: string;
-  checkoutUrl: string;
-  totalQuantity: number;
-  lines: {
-    edges: {
-      node: {
-        id: string;
-        quantity: number;
-        merchandise: {
-          id: string;
-          title: string;
-          image?: { url: string; altText?: string | null };
-          product?: { title: string; handle: string };
-          price?: { amount: string; currencyCode: string };
-        }
-      }
-    }[]
-  };
+  checkoutUrl?: string;
+  lines: { edges: { node: CartLineNode }[] };
 };
 
 export default function CartContents() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busyLine, setBusyLine] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const syncBadge = (c: Cart | null) => {
-    const qty = c?.totalQuantity ?? 0;
-    window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total: qty } }));
-  };
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/cart/get", { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to load cart");
+      const json = (await res.json()) as { cart: Cart | null };
+      setCart(json.cart ?? null);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const load = async () => {
-    setLoading(true);
-    const res = await fetch("/api/cart/get", { cache: "no-store" });
-    const json = await res.json();
-    setCart(json.cart ?? null);
-    syncBadge(json.cart ?? null);
-    setLoading(false);
-  };
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-  useEffect(() => { load(); }, []);
+  const subtotal = useMemo(() => {
+    const lines = cart?.lines?.edges ?? [];
+    const sum = lines.reduce((acc, e) => {
+      const amt = Number(e.node.cost?.totalAmount?.amount ?? 0);
+      return acc + (isFinite(amt) ? amt : 0);
+    }, 0);
+    return sum;
+  }, [cart]);
 
-  const clearAll = async () => {
-    const res = await fetch("/api/cart/clear", { method: "POST" });
-    const json = await res.json();
-    setCart(json.cart ?? null);
-    syncBadge(json.cart ?? null);
+  const emitCartChanged = () => window.dispatchEvent(new Event("cart:changed"));
+
+  const updateQty = async (lineId: string, quantity: number) => {
+    if (quantity < 1) return removeLine(lineId);
+    try {
+      setBusyLine(lineId);
+      setError(null);
+      const res = await fetch("/api/cart/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineId, quantity }),
+      });
+      if (!res.ok) throw new Error("Failed to update quantity");
+      await load();
+      emitCartChanged();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusyLine(null);
+    }
   };
 
   const removeLine = async (lineId: string) => {
-    setCart(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        lines: {
-          edges: prev.lines.edges.filter(e => e.node.id !== lineId)
-        },
-        totalQuantity: Math.max(0, prev.totalQuantity - (prev.lines.edges.find(e => e.node.id === lineId)?.node.quantity ?? 0))
-      };
-    });
-    const res = await fetch("/api/cart/remove", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lineId }),
-    });
-    const json = await res.json();
-    setCart(json.cart ?? null);
-    syncBadge(json.cart ?? null);
+    try {
+      setBusyLine(lineId);
+      setError(null);
+      const res = await fetch("/api/cart/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lineId }),
+      });
+      if (!res.ok) throw new Error("Failed to remove item");
+      await load();
+      emitCartChanged();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusyLine(null);
+    }
   };
 
-  const changeQty = async (lineId: string, qty: number) => {
-    if (qty < 1) return removeLine(lineId);
-    setCart(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        lines: {
-          edges: prev.lines.edges.map(e => e.node.id === lineId ? { node: { ...e.node, quantity: qty } } : e)
-        }
-      } as Cart;
-    });
-    const res = await fetch("/api/cart/update", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lineId, quantity: qty }),
-    });
-    const json = await res.json();
-    setCart(json.cart ?? null);
-    syncBadge(json.cart ?? null);
+  const clearCart = async () => {
+    try {
+      setError(null);
+      const res = await fetch("/api/cart/clear", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to clear cart");
+      await load();
+      emitCartChanged();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
 
-  const safeLines = (cart?.lines?.edges ?? [])
-    .map(e => e?.node)
-    .filter((n): n is NonNullable<typeof n> => Boolean(n && n.merchandise));
+  if (loading) return <p>Loading cart…</p>;
+  if (error) return <p role="alert">Error: {error}</p>;
 
-  if (loading) return <p className={css["empty"]}>Loading…</p>;
-  if (!cart || safeLines.length === 0) {
+  const lines = cart?.lines?.edges ?? [];
+
+  if (!cart || lines.length === 0) {
     return (
-      <>
-        <div className={css["cart-start-actions-container"]} />
-        <p className={css["empty"]}>Your cart is empty.</p>
-        <Link href="/store">
-          <button className={css["empty-shop-btn"]}><p>Start Shopping</p></button>
-        </Link>
-      </>
+      <div>
+        <p>Your cart is empty.</p>
+        <Link href="/store" className="underline">Continue shopping →</Link>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className={css["cart-start-actions-container"]}>
-        <button className={css["cart-clear-btn"]} onClick={clearAll}>Clear</button>
-      </div>
-
-      <div className={css["items-container"]}>
-        {safeLines.map((line) => {
-          const v = line.merchandise!;
-          const img = v.image?.url ?? null;
-          const title = v.product?.title ?? v.title ?? "Item";
-          const price = Number(v.price?.amount ?? "0");
-          const handle = v.product?.handle || "";
+    <div className="space-y-6">
+      <ul className="divide-y">
+        {lines.map(({ node }) => {
+          const title =
+            node.merchandise.product?.title ??
+            node.merchandise.title ??
+            "Product";
+          const handle = node.merchandise.product?.handle ?? "";
+          const priceEach = Number(node.cost?.amountPerQuantity?.amount ?? 0);
+          const lineTotal = Number(node.cost?.totalAmount?.amount ?? priceEach * node.quantity);
 
           return (
-            <div key={line.id} className={css["item-card"]}>
-              <div className={css["item-card-info-cover"]}>
-                <div className={css["item-img-cover"]}>
-                  {img ? (
-                    <Image
-                      className={css["item-img"]}
-                      src={img}
-                      width={70}
-                      height={70}
-                      alt={v.image?.altText ?? title}
-                    />
-                  ) : (
-                    <div className={css["item-img-placeholder"]} aria-label="No image" />
-                  )}
+            <li key={node.id} className="py-4 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-medium">
+                  {handle ? <Link href={`/${handle}`} className="underline">{title}</Link> : title}
                 </div>
-
-                <div className={css["item-card-texts"]}>
-                  {handle ? (
-                    <Link href={`/${handle}`} className={css["item-card-title"]}>{title}</Link>
-                  ) : (
-                    <span className={css["item-card-title"]}>{title}</span>
-                  )}
-                  <p className={css["item-card-price"]}>${price.toFixed(2)}</p>
-
-                  <div className={css["qty-row"]}>
-                    <button onClick={() => changeQty(line.id, line.quantity - 1)} className={css["qty-btn"]}>–</button>
-                    <span className={css["qty"]}>{line.quantity}</span>
-                    <button onClick={() => changeQty(line.id, line.quantity + 1)} className={css["qty-btn"]}>＋</button>
-                  </div>
+                <div className="text-sm opacity-70">${priceEach.toFixed(2)} each</div>
+                <div className="mt-2 inline-flex items-center gap-2">
+                  <button
+                    onClick={() => updateQty(node.id, node.quantity - 1)}
+                    disabled={busyLine === node.id}
+                    className="px-2 py-1 border rounded"
+                    aria-label="Decrease quantity"
+                  >
+                    −
+                  </button>
+                  <span className="w-8 text-center">{node.quantity}</span>
+                  <button
+                    onClick={() => updateQty(node.id, node.quantity + 1)}
+                    disabled={busyLine === node.id}
+                    className="px-2 py-1 border rounded"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => removeLine(node.id)}
+                    disabled={busyLine === node.id}
+                    className="ml-4 text-sm underline"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
 
-              <div className={css["item-card-actions"]}>
-                <button onClick={() => removeLine(line.id)} className={css["remove-item-btn"]} title="Remove">🗑</button>
+              <div className="text-right font-medium">
+                ${lineTotal.toFixed(2)}
               </div>
-            </div>
+            </li>
           );
         })}
+      </ul>
+
+      <div className="flex items-center justify-between border-t pt-4">
+        <div className="text-lg font-semibold">Subtotal</div>
+        <div className="text-lg font-semibold">${subtotal.toFixed(2)}</div>
       </div>
 
-      <div className={css["cart-end-actions-container"]}>
-        <a className={css["cart-buy-btn"]} href={cart.checkoutUrl}>Buy Now</a>
+      <div className="flex items-center justify-between">
+        <button onClick={clearCart} className="underline">
+          Clear cart
+        </button>
+        {cart.checkoutUrl ? (
+          <a href={cart.checkoutUrl} className="px-4 py-2 border rounded">
+            Checkout
+          </a>
+        ) : null}
       </div>
-    </>
+    </div>
   );
 }

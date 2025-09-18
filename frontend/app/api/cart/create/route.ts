@@ -1,25 +1,42 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { shopifyFetch } from "../../../lib/shopify";
-import { CART_CREATE } from "../../../services/queries";
+import { CART_QUERY, CART_LINES_REMOVE } from "../../../services/queries";
 
-export async function POST(req: Request) {
+import type { CartResponse, CartUserError } from "../../../types/cart";
+
+type CartVars = { id: string };
+type CartData = { cart: CartResponse | null };
+
+type RemoveVars = { cartId: string; lineIds: string[] };
+type RemoveData = { cartLinesRemove: { cart: CartResponse | null; userErrors: CartUserError[] } };
+
+export async function POST() {
   try {
-    const { merchandiseId, quantity = 1 } = await req.json().catch(() => ({}));
-    if (!merchandiseId) {
-      return NextResponse.json({ ok: false, error: "Missing merchandiseId" }, { status: 400 });
-    }
+    const jar = await cookies();
+    const cartId = jar.get("bl_cartId")?.value;
+    if (!cartId) return NextResponse.json({ ok: true, cart: null });
 
-    const data = await shopifyFetch({
-      query: CART_CREATE,
-      variables: { lines: [{ merchandiseId, quantity }] },
+    const current = await shopifyFetch<CartData, CartVars>({
+      query: CART_QUERY,
+      variables: { id: cartId },
+      cache: "no-store",
     });
 
-    const err = data.cartCreate?.userErrors?.[0]?.message;
-    if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
+    const lineIds =
+      current.cart?.lines?.edges?.map(e => e.node.id) ?? [];
 
-    const checkoutUrl = data.cartCreate?.cart?.checkoutUrl;
-    return NextResponse.json({ ok: true, checkoutUrl });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message || "Internal error" }, { status: 500 });
+    if (!lineIds.length)
+      return NextResponse.json({ ok: true, cart: current.cart });
+
+    const data = await shopifyFetch<RemoveData, RemoveVars>({
+      query: CART_LINES_REMOVE,
+      variables: { cartId, lineIds },
+    });
+
+    return NextResponse.json({ ok: true, cart: data.cartLinesRemove.cart });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Internal error";
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

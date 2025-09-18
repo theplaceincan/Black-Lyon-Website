@@ -5,40 +5,54 @@ import { CART_CREATE, CART_LINES_ADD } from "../../../services/queries";
 
 const COOKIE = "bl_cartId";
 
+type CartUserError = { message: string };
+type CartCreateData = { cartCreate: { cart: { id: string } | null; userErrors: CartUserError[] } };
+type CartCreateVars = { lines: { merchandiseId: string; quantity: number }[] };
+
+type CartAddData = { cartLinesAdd: { cart: unknown; userErrors: CartUserError[] } };
+type CartAddVars = { cartId: string; lines: { merchandiseId: string; quantity: number }[] };
+
 export async function POST(req: Request) {
   try {
-    const { merchandiseId, quantity = 1 } = await req.json();
+    const body = (await req.json()) as { merchandiseId?: string; quantity?: number };
+    const merchandiseId = body.merchandiseId;
+    const quantity = body.quantity ?? 1;
+
     if (!merchandiseId) {
       return NextResponse.json({ ok: false, error: "Missing merchandiseId" }, { status: 400 });
     }
 
     const jar = await cookies();
-    let cartId = jar.get(COOKIE)?.value || ""; 
+    let cartId = jar.get(COOKIE)?.value || "";
 
     if (!cartId) {
-      const created = await shopifyFetch<any>({
+      const created = await shopifyFetch<CartCreateData, CartCreateVars>({
         query: CART_CREATE,
         variables: { lines: [{ merchandiseId, quantity }] },
-        cache: "no-store"
+        cache: "no-store",
       });
-      const err = created?.cartCreate?.userErrors?.[0]?.message;
+      const err = created.cartCreate.userErrors?.[0]?.message;
       if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
 
-      cartId = created.cartCreate.cart.id;
+      const cart = created.cartCreate.cart;
+      if (!cart) return NextResponse.json({ ok: false, error: "No cart returned" }, { status: 500 });
+
+      cartId = cart.id;
       jar.set(COOKIE, cartId, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 30 });
-      return NextResponse.json({ ok: true, cart: created.cartCreate.cart });
+      return NextResponse.json({ ok: true, cart });
     }
 
-    const added = await shopifyFetch<any>({
+    const added = await shopifyFetch<CartAddData, CartAddVars>({
       query: CART_LINES_ADD,
       variables: { cartId, lines: [{ merchandiseId, quantity }] },
-      cache: "no-store"
+      cache: "no-store",
     });
-    const err = added?.cartLinesAdd?.userErrors?.[0]?.message;
+    const err = added.cartLinesAdd.userErrors?.[0]?.message;
     if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
 
     return NextResponse.json({ ok: true, cart: added.cartLinesAdd.cart });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message || "Internal error" }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Internal error";
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

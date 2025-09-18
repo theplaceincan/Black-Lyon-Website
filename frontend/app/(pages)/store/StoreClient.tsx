@@ -7,7 +7,7 @@ import AddToCartButton from "@/app/components/AddToCartButton";
 import css from "./Store.module.css";
 import { Product } from "../../types/shopify";
 
-export default function StoreClient({ products, inCartIds }: { products: Product[]; inCartIds: Set<string> }) {
+export default function StoreClient({ products, inCartIds, }: { products: Product[]; inCartIds: string[]; }) {
   const [q, setQ] = useState("");
   const inCart = useMemo(() => new Set(inCartIds), [inCartIds]);
 
@@ -19,6 +19,7 @@ export default function StoreClient({ products, inCartIds }: { products: Product
       (p.description ?? "").toLowerCase().includes(qq)
     );
   }, [q, products]);
+
 
   return (
     <div className={css.container}>
@@ -32,13 +33,18 @@ export default function StoreClient({ products, inCartIds }: { products: Product
       </div>
 
       <div className={css["products-container"]}>
-        {filtered.map((p) => {
+        {filtered.map((p, i) => {
           const variantId = p.variants?.edges?.[0]?.node?.id as string | undefined;
           const initialAdded = !!variantId && inCart.has(variantId);
 
+          const priceStr =
+            p.priceRange?.minVariantPrice?.amount ??
+            p.variants?.edges?.[0]?.node?.price?.amount ??
+            null;
+
           return (
-            <div key={p.id} className={css["product-card"]}>
-              <Link href={`/${p.handle}`} className={css["product-img"]}>
+            <div key={p.id ?? p.handle ?? `product-${i}`} className={css["product-card"]}>
+              <Link href={`/${p.handle ?? ""}`} className={css["product-img"]}>
                 {p.featuredImage && (
                   <Image
                     className={css["product-img-tag"]}
@@ -51,11 +57,11 @@ export default function StoreClient({ products, inCartIds }: { products: Product
               </Link>
 
               <div className={css["product-text-cover"]}>
-                <Link href={`/${p.handle}`} className={css["product-title-link"]}>
+                <Link href={`/${p.handle ?? ""}`} className={css["product-title-link"]}>
                   <p className={css["product-title"]}>{p.title}</p>
                 </Link>
                 <p className={css["product-price"]}>
-                  ${Number(p.priceRange.minVariantPrice.amount).toFixed(2)}
+                  {priceStr ? `$${Number(priceStr).toFixed(2)}` : "—"}
                 </p>
               </div>
 
@@ -67,7 +73,9 @@ export default function StoreClient({ products, inCartIds }: { products: Product
                     initialAdded={initialAdded}
                   />
                 ) : (
-                  <button className={css["cart-btn"]} disabled>Unavailable</button>
+                  <button className={css["cart-btn"]} disabled>
+                    Unavailable
+                  </button>
                 )}
               </div>
             </div>
