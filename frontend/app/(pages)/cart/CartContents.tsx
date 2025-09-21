@@ -4,31 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import css from "./Cart.module.css";
-
-type MoneyV2 = { amount: string; currencyCode: string };
-type CartLineNode = {
-  id: string;
-  quantity: number;
-  merchandise: {
-    id: string;
-    title?: string | null;
-    product?: {
-      handle?: string | null;
-      title?: string | null;
-      featuredImage?: { url: string; altText?: string | null } | null;
-    } | null;
-  };
-  cost?: {
-    totalAmount?: MoneyV2;
-    amountPerQuantity?: MoneyV2;
-  };
-};
-type Cart = {
-  id: string;
-  checkoutUrl?: string;
-  totalQuantity?: number;
-  lines: { edges: { node: CartLineNode }[] };
-};
+import type { Cart, CartAPIResponse } from "../../types/cart";
 
 export default function CartContents() {
   const [cart, setCart] = useState<Cart | null>(null);
@@ -68,7 +44,7 @@ export default function CartContents() {
   const notify = (total?: number) =>
     window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total } }));
 
-  const setCartFromResponse = (json: any) => {
+  const setCartFromResponse = (json: CartAPIResponse) => {
     const newCart: Cart | null = json?.cart ?? null;
     setCart(newCart);
     if (newCart) {
@@ -160,12 +136,19 @@ export default function CartContents() {
 
       <div className={css["items-container"]}>
         {lines.map(({ node }) => {
-          const handle = node.merchandise.product?.handle ?? "";
-          const title = node.merchandise.product?.title ?? node.merchandise.title ?? "Product";
-          const img = node.merchandise.product?.featuredImage;
-          const lineTotal =
-            Number(node.cost?.totalAmount?.amount ?? 0) ||
-            Number(node.cost?.amountPerQuantity?.amount ?? 0) * (node.quantity ?? 1);
+          const merch = node.merchandise;
+          const product = merch?.product;
+
+          const handle = product?.handle ?? "";
+          const title = product?.title ?? merch?.title ?? "Product";
+          const img = product?.featuredImage ?? null;
+
+          // prefer totalAmount; fall back to amountPerQuantity * quantity
+          const each = Number(node.cost?.amountPerQuantity?.amount ?? 0);
+          const total = Number(node.cost?.totalAmount?.amount ?? 0);
+          const lineTotal = Number.isFinite(total) && total > 0
+            ? total
+            : (Number.isFinite(each) ? each * node.quantity : 0);
 
           return (
             <div key={node.id} className={css["item-card"]}>
@@ -185,7 +168,7 @@ export default function CartContents() {
                     <span className={css["item-card-title"]}>{title}</span>
                   )}
                   <p className={css["item-card-price"]}>${lineTotal.toFixed(2)}</p>
-
+                  
                   <div className={css["item-card-actions"]}>
                     <div className={css["qty-row"]}>
                       <button
