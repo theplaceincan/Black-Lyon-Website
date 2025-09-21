@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { shopifyFetch } from "../../../lib/shopify";
 import { CART_CREATE, CART_LINES_ADD, CART_QUERY /*, CART_LINES_UPDATE */ } from "../../../services/queries";
+import type { Cart } from "../../../types/cart";
 
 const COOKIE = "bl_cartId";
 
@@ -9,16 +10,13 @@ type CartUserError = { message: string };
 type CartCreateData = { cartCreate: { cart: { id: string } | null; userErrors: CartUserError[] } };
 type CartCreateVars = { lines: { merchandiseId: string; quantity: number }[] };
 
-type CartAddData = { cartLinesAdd: { cart: any; userErrors: CartUserError[] } };
+type CartAddData = {
+  cartLinesAdd: { cart: Cart | null; userErrors: CartUserError[] };
+};
 type CartAddVars = { cartId: string; lines: { merchandiseId: string; quantity: number }[] };
 
-type CartGetData = {
-  cart: {
-    id: string;
-    totalQuantity?: number;
-    lines: { edges: { node: { id: string; quantity: number; merchandise: { id: string } } }[] };
-  } | null;
-};
+type CartGetData = { cart: Cart | null };
+
 type CartGetVars = { id: string };
 
 export async function POST(req: Request) {

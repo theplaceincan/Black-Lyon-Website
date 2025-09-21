@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import type { CartAPIResponse } from "../types/cart";
+
+type HasMerchEdge = { node?: { merchandise?: { id?: string } | null } };
 
 export default function AddToCartButton({
   merchandiseId,
@@ -19,9 +22,9 @@ export default function AddToCartButton({
     (async () => {
       try {
         const res = await fetch("/api/cart/get", { cache: "no-store" });
-        const json = await res.json().catch(() => ({}));
-        const present = (json?.cart?.lines?.edges ?? []).some(
-          (e: any) => e?.node?.merchandise?.id === merchandiseId
+        const json: CartAPIResponse = await res.json().catch(() => ({ ok: false, cart: null }));
+        const present = (json.cart?.lines?.edges ?? []).some(
+          (e: HasMerchEdge) => e?.node?.merchandise?.id === merchandiseId
         );
         if (!aborted && present) setAdded(true);
       } catch {}
@@ -34,10 +37,10 @@ export default function AddToCartButton({
   useEffect(() => {
     const onUpdated = () => {
       fetch("/api/cart/get", { cache: "no-store" })
-        .then(r => r.json())
+        .then(r => r.json() as Promise<CartAPIResponse>)
         .then(json => {
-          const present = (json?.cart?.lines?.edges ?? []).some(
-            (e: any) => e?.node?.merchandise?.id === merchandiseId
+          const present = (json.cart?.lines?.edges ?? []).some(
+            (e: HasMerchEdge) => e?.node?.merchandise?.id === merchandiseId
           );
           if (present) setAdded(true);
         })
@@ -56,10 +59,8 @@ export default function AddToCartButton({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ merchandiseId, quantity: 1 }),
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json?.ok === false) {
-        throw new Error(json?.error || "Failed to add to cart");
-      }
+      const json: CartAPIResponse = await res.json().catch(() => ({ ok: false, cart: null }));
+      if (!res.ok || json?.ok === false) throw new Error(json?.error || "Failed to add to cart");
       setAdded(true);
       const total = json?.cart?.totalQuantity;
       window.dispatchEvent(new CustomEvent("cart:updated", { detail: { total } }));
