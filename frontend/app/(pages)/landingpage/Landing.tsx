@@ -7,7 +7,7 @@ export default function LandingPage() {
   return (
     <div>
       <Hero/>
-      <Featured/>
+      {/* <Featured/> */}
     </div>
   )
 }
