@@ -152,6 +152,7 @@
 
 .empty {
   color: white;
+  margin-bottom: 10px;
 }
 
 .buy-more-text {
@@ -160,7 +161,6 @@
 }
 
 .empty-shop-btn {
-  margin-top: 10px;
   cursor: pointer;
   padding: 10px 21px;
   background-color: black;
