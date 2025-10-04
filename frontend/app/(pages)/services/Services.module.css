@@ -27,6 +27,7 @@
 }
 
 .service-card {
+  margin: 10px;
   height: 450px;
   width: 450px;
   background-repeat: no-repeat;
